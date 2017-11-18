@@ -51,12 +51,10 @@ def send_to_yaml(yaml_filename, dict_list):
 # Callback function for your Point Cloud Subscriber
 def pcl_callback(pcl_msg):
 
-# Exercise-2 TODOs:
-
-    # TODO: Convert ROS msg to PCL data
+    #  Convert ROS msg to PCL data
     cloud = ros_to_pcl(pcl_msg)
 
-    # TODO: Statistical Outlier Filtering
+    #  Statistical Outlier Filtering
     # Much like the previous filters, we start by creating a filter object:
     outlier_filter = cloud.make_statistical_outlier_filter()
 
@@ -77,7 +75,7 @@ def pcl_callback(pcl_msg):
     # outlier_filter.set_negative(True)
     # pcl.save(outlier_filter.filter(), "table_scene_outliers.pcd")
 
-    # TODO: Voxel Grid Downsampling
+    # Voxel Grid Downsampling
     vox = cloud_filtered.make_voxel_grid_filter()
 
     # Choose a voxel (also known as leaf) size
@@ -93,7 +91,7 @@ def pcl_callback(pcl_msg):
     # filename = 'voxel_downsampled.pcd'
     # pcl.save(cloud_filtered, filename)
 
-    # TODO: PassThrough Filter
+    # PassThrough Filter
     # Create a PassThrough filter object.
     passthrough = cloud_filtered.make_passthrough_filter()
 
@@ -116,7 +114,7 @@ def pcl_callback(pcl_msg):
     # filename = 'pass_through_filtered.pcd'
     # pcl.save(cloud_filtered, filename)
 
-    # TODO: RANSAC Plane Segmentation
+    # RANSAC Plane Segmentation
     # Create the segmentation object
     seg = cloud_filtered.make_segmenter()
 
@@ -133,13 +131,13 @@ def pcl_callback(pcl_msg):
     # Call the segment function to obtain set of inlier indices and model coefficients
     inliers, coefficients = seg.segment()
 
-    # TODO: Extract inliers and outliers
+    # Extract inliers and outliers
     extracted_inliers = cloud_filtered.extract(inliers, negative=False)
     extracted_outliers = cloud_filtered.extract(inliers, negative=True)
     cloud_table = extracted_inliers
     cloud_objects = extracted_outliers
 
-    # TODO: Euclidean Clustering
+    # Euclidean Clustering
     white_cloud = XYZRGB_to_XYZ(cloud_objects)
     tree = white_cloud.make_kdtree()
 
@@ -156,7 +154,7 @@ def pcl_callback(pcl_msg):
     # Extract indices for each of the discovered clusters
     cluster_indices = ec.Extract()
 
-    # TODO: Create Cluster-Mask Point Cloud to visualize each cluster separately
+    # Create Cluster-Mask Point Cloud to visualize each cluster separately
     #Assign a color corresponding to each segmented object in scene
     cluster_color = get_color_list(len(cluster_indices))
 
@@ -173,12 +171,12 @@ def pcl_callback(pcl_msg):
     cluster_cloud = pcl.PointCloud_PointXYZRGB()
     cluster_cloud.from_list(color_cluster_point_list)
 
-    # TODO: Convert PCL data to ROS messages
+    # Convert PCL data to ROS messages
     ros_cloud_objects = pcl_to_ros(cloud_objects)
     ros_cloud_table = pcl_to_ros(cloud_table)
     ros_cluster_cloud = pcl_to_ros(cluster_cloud)
 
-    # TODO: Publish ROS messages
+    # Publish ROS messages
     pcl_objects_pub.publish(ros_cloud_objects)
     pcl_table_pub.publish(ros_cloud_table)
     pcl_cluster_pub.publish(ros_cluster_cloud)
@@ -193,11 +191,11 @@ def pcl_callback(pcl_msg):
         # Grab the points for the cluster
         pcl_cluster = cloud_objects.extract(pts_list)
 
-        # TODO: convert the cluster from pcl to ROS using helper function
+        # convert the cluster from pcl to ROS using helper function
         ros_cluster = pcl_to_ros(pcl_cluster)
 
         # Extract histogram features
-        # TODO: complete this step just as is covered in capture_features.py
+        # complete this step just as is covered in capture_features.py
         # Compute histograms for the clusters
         chists = compute_color_histograms(ros_cluster, using_hsv=True)
         normals = get_normals(ros_cluster)
@@ -334,7 +332,7 @@ def pr2_mover(object_list):
 
     # TODO: Rotate PR2 in place to capture side tables for the collision map
 
-    # TODO: Loop through the pick list
+    # Loop through the pick list
     for pick_object in pick_list:
         rospy.loginfo(pick_object)
 
@@ -355,7 +353,7 @@ def pr2_mover(object_list):
         except rospy.ServiceException, e:
             print "Service call failed: %s"%e
 
-    # TODO: Output your request parameters into output yaml file
+    #  Output your request parameters into output yaml file
     yaml_filename = '/tmp/output_{}.yaml'.format(test_scene_num.data)
     yaml_dict_list = [po.yaml_dict for po in pick_list]
     rospy.loginfo("writing {}".format(yaml_filename))
@@ -365,20 +363,19 @@ def pr2_mover(object_list):
 if __name__ == '__main__':
 
 
-    # TODO: ROS node initialization
+    # ROS node initialization
     rospy.init_node('perception_pipeline', anonymous=True)
 
-    # TODO: Create Subscribers
+    # Create Subscribers
     pcl_sub = rospy.Subscriber("/pr2/world/points", pc2.PointCloud2, pcl_callback, queue_size=1)
 
-    # TODO: Create Publishers
+    # Create Publishers
     object_markers_pub = rospy.Publisher("/object_markers", Marker, queue_size=1)
     detected_objects_pub = rospy.Publisher("/detected_objects", DetectedObjectsArray, queue_size=1)
     pcl_objects_pub = rospy.Publisher("/pcl_objects", PointCloud2, queue_size=1)
     pcl_table_pub = rospy.Publisher("/pcl_table", PointCloud2, queue_size=1)
     pcl_cluster_pub = rospy.Publisher("/pcl_cluster", PointCloud2, queue_size=1)
 
-    # TODO: Load Model From disk
     # Load Model From disk
     model = pickle.load(open('model.sav', 'rb'))
     clf = model['classifier']
