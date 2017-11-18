@@ -33,6 +33,8 @@ A voxel filter is applied with a voxel (also know as leaf) `size = .01` to down 
 
 Two passthrough filters one on the 'x' axis (`axis_min = 0.4` `axis_max = 3.`) to remove the box edges and another on the 'z' axis (`axis_min = 0.6` `axis_max = 1.1`) along the table plane are applied.
 
+![Passthrough Filtered](https://github.com/hortovanyi/RoboND-Perception-Project/blob/master/output/screenshot-1510992048.png?raw=true)
+
 Finally a [RANSAC](https://en.wikipedia.org/wiki/Random_sample_consensus) filter is applied to find inliers being the table and outliers being the objects on it per the following
 
 ```
